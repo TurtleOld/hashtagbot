@@ -1,4 +1,4 @@
-from config.config_bot import hashtag_bot
+from config.bot import hashtag_bot
 
 
 @hashtag_bot.message_handler(commands=['start'])
