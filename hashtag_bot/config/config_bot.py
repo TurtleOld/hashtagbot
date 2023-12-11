@@ -5,7 +5,4 @@ from telebot import TeleBot
 
 load_dotenv()
 token = os.getenv('TOKEN_TELEGRAM_BOT')
-bot_admin = TeleBot(
-    token,
-    parse_mode='html'
-)
+hashtag_bot = TeleBot(token, parse_mode='html')
