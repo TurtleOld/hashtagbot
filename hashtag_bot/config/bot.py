@@ -1,8 +1,8 @@
 import os
 
 from dotenv import load_dotenv
-from telebot import TeleBot
+from telebot.async_telebot import AsyncTeleBot
 
 load_dotenv()
 token = os.getenv('TOKEN_TELEGRAM_BOT')
-hashtag_bot = TeleBot(token, parse_mode='html')
+hashtag_bot = AsyncTeleBot(token, parse_mode='html')
