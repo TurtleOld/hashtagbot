@@ -5,4 +5,4 @@ from telebot.async_telebot import AsyncTeleBot
 
 load_dotenv()
 token = os.getenv('TOKEN_TELEGRAM_BOT')
-hashtag_bot = AsyncTeleBot(token, parse_mode='html')
+bot = AsyncTeleBot(token, parse_mode='html')
