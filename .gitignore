@@ -162,3 +162,4 @@ cython_debug/
 *.sqlite
 
 */debug.json
+*/*/debug.json
