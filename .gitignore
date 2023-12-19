@@ -161,4 +161,4 @@ cython_debug/
 .db
 *.sqlite
 
-debug.json
+hashtag_bot/debug.json
