@@ -24,35 +24,32 @@ async def get_message_id(message: types.Message) -> None:
         if mess.startswith('#'):
             hashtag_list_message.append(mess)
     await bot.send_message(message.chat.id, ', '.join(hashtag_list_message))
-    session: Session = Session()
-    select_message_id = select(TelegramMessage.message_id)
-    message_id = (
-        session.query(TelegramMessage)
-        .filter(TelegramMessage.message_id == int(message.message_id))
-        .scalar_subquery()
-    )
-    # message_id_text = ''.join(list(message_id))
-    session.close()
-    print(message.message_id)
-    if not list(message_id):
-        session: Session = Session()
-        insert_message = TelegramMessage(message_id=message.message_id)
-        session.add(insert_message)
-        session.commit()
-        session.close()
+    print(message.message_id + 1)
+    with Session() as session:
+        select_message_id = select(TelegramMessage.message_id)
+        message_id = session.execute(select_message_id).first()
+        insert_message_result = []
+        if not message_id:
+            insert_message = TelegramMessage(message_id=message.message_id + 1)
+            insert_message_result.append(insert_message)
+            print(insert_message)
+            print(insert_message_result)
+            session.add(insert_message)
+            session.commit()
 
-    await bot.edit_message_text(
-        chat_id=message.chat.id,
-        message_id=message_id,
-        text=', '.join(hashtag_list_message),
-    )
+        await bot.pin_chat_message(
+            chat_id=message.chat.id,
+            message_id=message_id[0],
+            disable_notification=True,
+        )
+        print(insert_message_result)
+        print(message_id)
+        await bot.edit_message_text(
+            chat_id=message.chat.id,
+            message_id=message_id[0],
+            text=', '.join(hashtag_list_message),
+        )
 
-    await bot.unpin_all_chat_messages(chat_id=message.chat.id)
-    await bot.pin_chat_message(
-        chat_id=message.chat.id,
-        message_id=select_message_id,
-        disable_notification=True,
-    )
 
 
 def start_bot() -> None:
