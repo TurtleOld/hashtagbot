@@ -3,8 +3,7 @@ import os.path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-DATABASE_NAME = 'hashtag_bot/database/hashtag_bot.sqlite'
-
+DATABASE_NAME = 'hashtag_bot.sqlite'
 engine = create_engine(f'sqlite:///{DATABASE_NAME}')
 Session = sessionmaker(bind=engine)
 
