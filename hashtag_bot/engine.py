@@ -3,7 +3,7 @@ import asyncio
 
 from hashtag_bot.config.logger import logger
 from hashtag_bot.config.create_database import create_database
-from hashtag_bot.models.database import DATABASE_NAME
+from hashtag_bot.database.database import DATABASE_NAME
 from hashtag_bot.telegram_bot.hello import start_bot
 
 
