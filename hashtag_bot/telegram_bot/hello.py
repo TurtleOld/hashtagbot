@@ -76,7 +76,7 @@ async def process_hashtag_channel(message: types.Message) -> None:
             telegram_message = get_telegram_message(session, message)
             if not telegram_message:
                 sent_hashtags = await bot.send_message(
-                    message.chat.id, " ".join([hashtags])
+                    message.chat.id, " ".join([hashtag for hashtag in hashtags])
                 )
                 telegram_chat = record_telegram_chat(session, message)
                 telegram_message = record_telegram_message(
@@ -91,12 +91,16 @@ async def process_hashtag_channel(message: types.Message) -> None:
                     disable_notification=True,
                 )
             else:
-                new_text = (telegram_message.text + ' ' + ''.join([hashtags])).strip()
+                existing_hashtags = set(telegram_message.hashtags.split())
+                new_hashtags = set(hashtags)
+                combined_hashtags = list(existing_hashtags.union(new_hashtags))
                 await bot.edit_message_text(
                     chat_id=message.chat.id,
                     message_id=telegram_message.message_id,
-                    text=new_text,
+                    text=" ".join(combined_hashtags),
                 )
+                telegram_message.hashtags = " ".join(combined_hashtags)
+                session.commit()        
             record_hashtags_database(session, hashtags, telegram_message)
 
 
