@@ -113,7 +113,9 @@ async def process_hashtags(session, message: types.Message) -> None:
                 set(hashtags)
             )
 
-            new_text = ' '.join(sorted(combined_hashtags))
+            new_text = '&#128204; Список всех хештегов:\n\n' + ' '.join(
+                sorted(combined_hashtags)
+            )
 
             if new_text != existing_hashtags:
                 await bot.edit_message_text(
