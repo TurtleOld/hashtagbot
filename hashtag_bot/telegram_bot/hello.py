@@ -81,7 +81,9 @@ async def process_hashtags(session, message: types.Message) -> None:
         telegram_message = get_telegram_message(session, message.chat.id)
         if not telegram_message:
             sent_hashtags = await bot.send_message(
-                message.chat.id, ' '.join([hashtag for hashtag in hashtags])
+                message.chat.id,
+                '&#128204; Список всех хештегов:\n\n'
+                + ' '.join([hashtag for hashtag in sorted(set(hashtags))]),
             )
             telegram_chat = record_telegram_chat(session, message)
             telegram_message = record_telegram_message(
@@ -106,7 +108,7 @@ async def process_hashtags(session, message: types.Message) -> None:
                 .all()
             )
             existing_hashtags = ' '.join(
-                [hashtag2.name for hashtag2 in existing_hashtags]
+                [hashtag2.name for hashtag2 in set(existing_hashtags)]
             )
 
             combined_hashtags = set(existing_hashtags.split()).union(
