@@ -1,0 +1,11 @@
+version: "3"
+services:
+  gethashtag-bot:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - hashtagdata:/app
+
+volumes:
+  hashtagdata:
