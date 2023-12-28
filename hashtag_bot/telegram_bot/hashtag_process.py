@@ -1,13 +1,16 @@
 import asyncio
 
 from icecream import ic
-from sqlalchemy import select, ChunkedIteratorResult, Row
 from telebot import types
-
 from hashtag_bot.config.logger import logger
 from hashtag_bot.config.bot import bot
 from hashtag_bot.database.database import Session
-from hashtag_bot.models.telegram import HashTag, TelegramMessage, TelegramChat
+from hashtag_bot.models.telegram import (
+    HashTag,
+    TelegramMessage,
+    TelegramChat,
+    AdminChat,
+)
 
 
 @logger.catch
@@ -72,6 +75,7 @@ def record_hashtags_database(
 
 @logger.catch
 async def process_hashtags(session, message: types.Message) -> None:
+    print(message.text)
     if '#' in message.text:
         hashtags = [
             name_hashtag.lower()
@@ -136,10 +140,19 @@ async def process_hashtag_channel(message: types.Message) -> None:
         await process_hashtags(session, message)
 
 
+ALLOWED_USERS = ['219008465']
+
+
 @logger.catch
 @bot.message_handler(func=lambda message: message.text)
 async def process_hashtag_group(message: types.Message) -> None:
     with Session() as session:
+        admin_user = (
+            session.query(AdminChat)
+            .join(AdminChat.chat)
+            .filter(TelegramChat.chat_id == message.chat.id)
+        ).all()
+        ic(admin_user)
         await process_hashtags(session, message)
 
 
