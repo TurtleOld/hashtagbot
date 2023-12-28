@@ -9,7 +9,8 @@ from hashtag_bot.telegram_bot.hashtag_process import start_bot
 
 @logger.catch
 def main():
-    create_database()
+    if not os.path.abspath(DATABASE_NAME):
+        create_database()
     loop = asyncio.get_event_loop()
     loop.run_until_complete(start_bot())
     loop.close()
