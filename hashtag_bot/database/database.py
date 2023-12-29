@@ -1,12 +1,33 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+import os.path
 
-DATABASE_NAME = 'hashtag_bot.sqlite'
-engine = create_engine(f'sqlite:///{DATABASE_NAME}')
-Session = sessionmaker(bind=engine)
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+    AsyncAttrs,
+    async_sessionmaker,
+    AsyncSession,
+)
+from sqlalchemy.orm import DeclarativeBase
 
-Base = declarative_base()
+DATABASE_URL = os.environ.get('DATABASE_URL')
+engine = create_async_engine(f'postgresql+asyncpg://{DATABASE_URL}', echo=True)
+
+Session = async_sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+)
 
 
-def create_db():
-    Base.metadata.create_all(engine)
+class Base(AsyncAttrs, DeclarativeBase):
+    pass
+
+
+async def init_db() -> None:
+    async with engine.begin() as connect:
+        await connect.run_sync(Base.metadata.create_all)
+
+
+async def get_session() -> None:
+    async_session = Session()
+    async with async_session() as session:
+        yield session
