@@ -1,10 +1,14 @@
-import asyncio
-
 from icecream import ic
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import (
+    async_sessionmaker,
+    AsyncSession,
+    create_async_engine,
+)
 from telebot import types
 from hashtag_bot.config.logger import logger
 from hashtag_bot.config.bot import bot
-from hashtag_bot.database.database import Session
+from hashtag_bot.database.database import DATABASE_URL
 from hashtag_bot.models.telegram import (
     HashTag,
     TelegramMessage,
@@ -20,45 +24,48 @@ async def start_message(message: types.Message) -> None:
 
 
 @logger.catch
-def record_telegram_chat(session, message: types.Message) -> TelegramChat:
-    telegram_chat = (
-        session.query(TelegramChat).filter_by(chat_id=message.chat.id).first()
+async def get_telegram_chat(session, message: types.Message) -> TelegramChat:
+    telegram_chat = await session.execute(
+        select(TelegramChat).filter_by(chat_id=message.chat.id)
     )
-    if not telegram_chat:
-        telegram_chat = TelegramChat(chat_id=message.chat.id)
-        session.add(telegram_chat)
-        session.commit()
-    return telegram_chat
+    return telegram_chat.scalar_one_or_none()
 
 
 @logger.catch
-def get_telegram_message(session: Session, chat_id: int) -> TelegramMessage:
-    return (
-        session.query(TelegramMessage)
-        .join(TelegramMessage.chat)
-        .filter(TelegramChat.chat_id == chat_id)
-        .first()
+async def get_telegram_message(session, telegram_chat_id) -> TelegramMessage:
+    result = await session.execute(
+        select(TelegramMessage).filter_by(chat_id=telegram_chat_id)
     )
+    ic(result)
+    return result.scalar_one_or_none()
 
 
 @logger.catch
-def record_telegram_message(
-    session: Session,
+async def record_telegram_chat(session, telegram_chat) -> None:
+    telegram_chat = TelegramChat(chat_id=telegram_chat)
+    session.add(telegram_chat)
+    await session.commit()
+
+
+@logger.catch
+async def record_telegram_message(
+    session,
     telegram_message_id: int,
     telegram_chat,
-) -> TelegramMessage:
+) -> None:
+    ic(telegram_chat)
+    ic()
     telegram_message = TelegramMessage(
         message_id=telegram_message_id,
         chat=telegram_chat,
     )
     session.add(telegram_message)
-    session.commit()
-    return telegram_message
+    await session.commit()
 
 
 @logger.catch
-def record_hashtags_database(
-    session: Session(),
+async def record_hashtags_database(
+    session,
     hashtag_list,
     telegram_message,
 ) -> list[HashTag]:
@@ -67,77 +74,112 @@ def record_hashtags_database(
         for name_hashtag in hashtag_list
     ]
     session.add_all(hashtags)
-    telegram_message.hashtags.extend(hashtags)
-    session.merge(telegram_message)
-    session.commit()
+    await session.commit()
     return hashtags
 
 
+async def existing_hashtag(session, telegram_message: TelegramMessage):
+    result = await session.execute(
+        select(HashTag).filter_by(message_id=telegram_message.id)
+    )
+    return result.scalars()
+
+
 @logger.catch
-async def process_hashtags(session, message: types.Message) -> None:
-    print(message.text)
+async def process_hashtags(
+    async_session: async_sessionmaker[AsyncSession],
+    message: types.Message,
+) -> None:
     if '#' in message.text:
         hashtags = [
             name_hashtag.lower()
             for name_hashtag in message.text.split()
             if name_hashtag.startswith('#')
         ]
-        telegram_message = get_telegram_message(session, message.chat.id)
-        if not telegram_message:
-            sent_hashtags = await bot.send_message(
-                message.chat.id,
-                '&#128204; Список всех хештегов:\n\n'
-                + ' '.join([hashtag for hashtag in sorted(set(hashtags))]),
-            )
-            telegram_chat = record_telegram_chat(session, message)
-            telegram_message = record_telegram_message(
+        async with async_session() as session:
+            telegram_chat = await get_telegram_chat(session, message)
+
+            if not telegram_chat:
+                await record_telegram_chat(
+                    session,
+                    message.chat.id,
+                )
+
+            telegram_chat = await get_telegram_chat(session, message)
+            telegram_message = await get_telegram_message(
                 session,
-                sent_hashtags.message_id,
-                telegram_chat,
+                telegram_chat.id,
             )
-
-            await bot.pin_chat_message(
-                chat_id=message.chat.id,
-                message_id=telegram_message.message_id,
-                disable_notification=True,
-            )
-        else:
-            existing_hashtags = (
-                session.query(HashTag)
-                .distinct()
-                .join(HashTag.message)
-                .filter(
-                    TelegramMessage.message_id == telegram_message.message_id
+            if not telegram_message:
+                sent_hashtags = await bot.send_message(
+                    message.chat.id,
+                    '&#128204; Список всех хештегов:\n\n'
+                    + ' '.join([hashtag for hashtag in sorted(set(hashtags))]),
                 )
-                .all()
-            )
-            existing_hashtags = ' '.join(
-                [hashtag2.name for hashtag2 in set(existing_hashtags)]
-            )
+                await record_telegram_message(
+                    session,
+                    sent_hashtags.message_id,
+                    telegram_chat,
+                )
 
-            combined_hashtags = set(existing_hashtags.split()).union(
-                set(hashtags)
-            )
+                telegram_chat = await get_telegram_chat(session, message)
+                ic(telegram_chat)
+                ic(telegram_chat.chat_id)
+                telegram_message = await get_telegram_message(
+                    session,
+                    telegram_chat.id,
+                )
+                ic(telegram_message)
 
-            new_text = '&#128204; Список всех хештегов:\n\n' + ' '.join(
-                sorted(combined_hashtags)
-            )
-
-            if new_text != existing_hashtags:
-                await bot.edit_message_text(
-                    chat_id=message.chat.id,
+                await bot.pin_chat_message(
+                    chat_id=telegram_chat.chat_id,
                     message_id=telegram_message.message_id,
-                    text=new_text,
+                    disable_notification=True,
                 )
-            session.commit()
-        record_hashtags_database(session, hashtags, telegram_message)
+            else:
+                existing_hashtags = await existing_hashtag(
+                    session, telegram_message
+                )
+                existing_hashtags = ' '.join(
+                    [hashtag2.name for hashtag2 in set(existing_hashtags)]
+                )
+                combined_hashtags = set(existing_hashtags.split()).union(
+                    set(hashtags)
+                )
+
+                new_text = '&#128204; Список всех хештегов:\n\n' + ' '.join(
+                    sorted(combined_hashtags)
+                )
+                telegram_chat = await get_telegram_chat(session, message)
+                telegram_message = await get_telegram_message(
+                    session,
+                    telegram_chat.id,
+                )
+                if new_text != existing_hashtags:
+                    await bot.edit_message_text(
+                        chat_id=message.chat.id,
+                        message_id=telegram_message.message_id,
+                        text=new_text,
+                    )
+                await session.commit()
+            await record_hashtags_database(
+                session,
+                hashtags,
+                telegram_message,
+            )
 
 
 @logger.catch
 @bot.channel_post_handler(func=lambda message: message.text)
 async def process_hashtag_channel(message: types.Message) -> None:
-    with Session() as session:
-        await process_hashtags(session, message)
+    engine = create_async_engine(
+        f'postgresql+asyncpg://{DATABASE_URL}',
+        echo=True,
+    )
+
+    async_session = async_sessionmaker(engine, expire_on_commit=False)
+
+    await process_hashtags(async_session, message)
 
 
 ALLOWED_USERS = ['219008465']
@@ -146,15 +188,16 @@ ALLOWED_USERS = ['219008465']
 @logger.catch
 @bot.message_handler(func=lambda message: message.text)
 async def process_hashtag_group(message: types.Message) -> None:
-    with Session() as session:
-        admin_user = (
-            session.query(AdminChat)
-            .join(AdminChat.chat)
-            .filter(TelegramChat.chat_id == message.chat.id)
-        ).all()
-        ic(admin_user)
-        await process_hashtags(session, message)
+    engine = create_async_engine(
+        f'postgresql+asyncpg://{DATABASE_URL}',
+        echo=True,
+    )
+
+    async_session = async_sessionmaker(engine, expire_on_commit=False)
+
+    await process_hashtags(async_session, message)
 
 
-def start_bot() -> None:
-    asyncio.run(bot.infinity_polling())
+@logger.catch
+async def start_bot():
+    return await bot.infinity_polling()
