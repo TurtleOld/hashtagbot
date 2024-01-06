@@ -1,4 +1,3 @@
-
 [tool.poetry]
 name = "hashtagbot"
 version = "0.1.0"
@@ -6,21 +5,21 @@ description = ""
 authors = ["TurtleOld <dev@pavlovteam.ru>"]
 readme = "README.rst"
 packages = [
-	{ include = 'hashtag_bot'}
+    { include = 'hashtag_bot' }
 ]
 
 [tool.poetry.dependencies]
 python = "^3.11.2"
-pytelegrambotapi = "^4.14.0"
+pytelegrambotapi = "^4.14.1"
 python-dotenv = "^1.0.0"
 loguru = "^0.7.2"
-sqlalchemy = "^2.0.23"
 aiohttp = "^3.9.1"
 watchdog = "^3.0.0"
-psutil = "^5.9.6"
+psutil = "^5.9.7"
 icecream = "^2.1.3"
 alembic = "^1.13.1"
 asyncpg = "^0.29.0"
+sqlalchemy = { extras = ["asyncio"], version = "^2.0.24" }
 
 [tool.poetry.scripts]
 hashtag-bot = "hashtag_bot.engine:main"
