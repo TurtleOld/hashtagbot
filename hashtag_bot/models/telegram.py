@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy import Column, Integer, ForeignKey, String, BigInteger
 from sqlalchemy.orm import relationship
 
 from hashtag_bot.database.database import Base
@@ -8,8 +8,8 @@ class TelegramMessage(Base):
     __tablename__ = "telegram_message"
 
     id = Column(Integer, primary_key=True)
-    message_id = Column(Integer)
-    chat_id = Column(Integer, ForeignKey('telegram_chat.id'))
+    message_id = Column(BigInteger)
+    chat_id = Column(BigInteger, ForeignKey('telegram_chat.id'))
     hashtags = relationship("HashTag", back_populates="message")
     chat = relationship(
         "TelegramChat",
@@ -23,7 +23,7 @@ class TelegramChat(Base):
     __tablename__ = "telegram_chat"
 
     id = Column(Integer, primary_key=True)
-    chat_id = Column(Integer)
+    chat_id = Column(BigInteger)
     message = relationship(
         "TelegramMessage",
         uselist=False,
@@ -41,7 +41,7 @@ class HashTag(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    message_id = Column(Integer, ForeignKey("telegram_message.id"))
+    message_id = Column(BigInteger, ForeignKey("telegram_message.id"))
     message = relationship(
         "TelegramMessage",
         back_populates="hashtags",
@@ -53,7 +53,7 @@ class AdminChat(Base):
 
     id = Column(Integer, primary_key=True)
     admin_user = Column(String)
-    chat_id = Column(Integer, ForeignKey('telegram_chat.id'))
+    chat_id = Column(BigInteger, ForeignKey('telegram_chat.id'))
     chat = relationship(
         "TelegramChat",
         back_populates="admin_user_chat",
