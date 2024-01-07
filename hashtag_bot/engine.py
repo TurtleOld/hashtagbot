@@ -4,10 +4,10 @@ from hashtag_bot.telegram_bot.hashtag_process import start_bot
 
 
 @logger.catch
-async def async_main():
-    ...
+def main():
+    asyncio.run(start_bot())
 
 
 if __name__ == '__main__':
     # asyncio.run(process_hashtag_channel)
-    asyncio.run(start_bot())
+    main()
