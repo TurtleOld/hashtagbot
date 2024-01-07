@@ -1,1 +1,1 @@
-worker: poetry run hashtag-bot
+worker: python hashtag_bot/engine.py
