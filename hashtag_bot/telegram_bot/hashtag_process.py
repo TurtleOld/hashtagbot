@@ -1,4 +1,3 @@
-from icecream import ic
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
@@ -36,7 +35,6 @@ async def get_telegram_message(session, telegram_chat_id) -> TelegramMessage:
     result = await session.execute(
         select(TelegramMessage).filter_by(chat_id=telegram_chat_id)
     )
-    ic(result)
     return result.scalar_one_or_none()
 
 
@@ -53,8 +51,6 @@ async def record_telegram_message(
     telegram_message_id: int,
     telegram_chat,
 ) -> None:
-    ic(telegram_chat)
-    ic()
     telegram_message = TelegramMessage(
         message_id=telegram_message_id,
         chat=telegram_chat,
@@ -123,13 +119,10 @@ async def process_hashtags(
                 )
 
                 telegram_chat = await get_telegram_chat(session, message)
-                ic(telegram_chat)
-                ic(telegram_chat.chat_id)
                 telegram_message = await get_telegram_message(
                     session,
                     telegram_chat.id,
                 )
-                ic(telegram_message)
 
                 await bot.pin_chat_message(
                     chat_id=telegram_chat.chat_id,
@@ -172,26 +165,17 @@ async def process_hashtags(
 @logger.catch
 @bot.channel_post_handler(func=lambda message: message.text)
 async def process_hashtag_channel(message: types.Message) -> None:
-    engine = create_async_engine(
-        f'postgresql+asyncpg://{DATABASE_URL}',
-        echo=True,
-    )
+    engine = create_async_engine(DATABASE_URL)
 
     async_session = async_sessionmaker(engine, expire_on_commit=False)
 
     await process_hashtags(async_session, message)
 
 
-ALLOWED_USERS = ['219008465']
-
-
 @logger.catch
 @bot.message_handler(func=lambda message: message.text)
 async def process_hashtag_group(message: types.Message) -> None:
-    engine = create_async_engine(
-        f'postgresql+asyncpg://{DATABASE_URL}',
-        echo=True,
-    )
+    engine = create_async_engine(DATABASE_URL)
 
     async_session = async_sessionmaker(engine, expire_on_commit=False)
 
