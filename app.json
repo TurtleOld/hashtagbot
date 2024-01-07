@@ -1,0 +1,16 @@
+{
+  "scripts": {
+    "dokku": {
+      "predeploy": "alembic revision --autogenerate && alembic upgrade head && poetry build && poetry install"
+    }
+  },
+  "healthchecks": {
+    "web": [
+      {
+        "attempts": 3,
+        "timeout": 20,
+        "wait": 10
+      }
+    ]
+  }
+}

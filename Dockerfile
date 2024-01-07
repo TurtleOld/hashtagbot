@@ -30,12 +30,12 @@ RUN chmod -R 755 /app
 RUN chmod -R a+w /app
 
 RUN pip install -r /app/requirements.txt
-
-RUN alembic revision --autogenerate
-RUN alembic upgrade head
-
-RUN poetry build
-RUN poetry install
+#
+#RUN alembic revision --autogenerate
+#RUN alembic upgrade head
+#
+#RUN poetry build
+#RUN poetry install
 
 WORKDIR /app
 USER user
