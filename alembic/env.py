@@ -1,13 +1,11 @@
 import asyncio
-import os
-import re
 from logging.config import fileConfig
-
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from alembic import context
 
+from hashtag_bot.database.database import DATABASE_URL
 from hashtag_bot.models.telegram import Base
 
 # this is the Alembic Config object, which provides
@@ -43,9 +41,8 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=url,
+        url=DATABASE_URL,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -67,12 +64,7 @@ async def run_async_migrations() -> None:
     and associate a connection with the context.
 
     """
-    url_token = {'DATABASE_URL': os.environ.get('DATABASE_URL')}
-
-    url = config.get_main_option("sqlalchemy.url")
-
-    url = re.sub(r"\${(.+?)}", lambda m: url_token[m.group(1)], url)
-    connectable = create_async_engine(url)
+    connectable = create_async_engine(DATABASE_URL)
 
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
