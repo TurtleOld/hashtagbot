@@ -1,7 +1,7 @@
 {
   "scripts": {
     "dokku": {
-      "predeploy": "alembic revision --autogenerate && alembic upgrade head && poetry build && poetry install"
+      "predeploy": "alembic upgrade head"
     }
   },
   "healthchecks": {
