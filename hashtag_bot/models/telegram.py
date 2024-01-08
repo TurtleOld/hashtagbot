@@ -29,11 +29,6 @@ class TelegramChat(Base):
         uselist=False,
         back_populates="chat",
     )
-    admin_user_chat = relationship(
-        'AdminChat',
-        uselist=True,
-        back_populates="chat",
-    )
 
 
 class HashTag(Base):
@@ -45,18 +40,4 @@ class HashTag(Base):
     message = relationship(
         "TelegramMessage",
         back_populates="hashtags",
-    )
-
-
-class AdminChat(Base):
-    __tablename__ = "admin_chat"
-
-    id = Column(Integer, primary_key=True)
-    admin_user = Column(String)
-    chat_id = Column(BigInteger, ForeignKey('telegram_chat.id'))
-    chat = relationship(
-        "TelegramChat",
-        back_populates="admin_user_chat",
-        uselist=True,
-        single_parent=True,
     )
