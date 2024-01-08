@@ -8,12 +8,7 @@ from telebot import types
 from hashtag_bot.config.logger import logger
 from hashtag_bot.config.bot import bot
 from hashtag_bot.database.database import DATABASE_URL
-from hashtag_bot.models.telegram import (
-    HashTag,
-    TelegramMessage,
-    TelegramChat,
-    AdminChat,
-)
+from hashtag_bot.models.telegram import HashTag, TelegramMessage, TelegramChat
 
 
 @logger.catch
@@ -175,11 +170,18 @@ async def process_hashtag_channel(message: types.Message) -> None:
 @logger.catch
 @bot.message_handler(func=lambda message: message.text)
 async def process_hashtag_group(message: types.Message) -> None:
-    engine = create_async_engine(DATABASE_URL)
+    admins = await bot.get_chat_administrators(message.chat.id)
+    for admin in admins:
+        if (
+            admin.status == 'administrator'
+            and admin.user.username == 'hashgettag_bot'
+            and admin.user.username == 'gethashtag_bot'
+        ):
+            engine = create_async_engine(DATABASE_URL)
 
-    async_session = async_sessionmaker(engine, expire_on_commit=False)
+            async_session = async_sessionmaker(engine, expire_on_commit=False)
 
-    await process_hashtags(async_session, message)
+            await process_hashtags(async_session, message)
 
 
 @logger.catch
