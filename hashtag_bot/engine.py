@@ -9,5 +9,4 @@ def main():
 
 
 if __name__ == '__main__':
-    # asyncio.run(process_hashtag_channel)
     main()
