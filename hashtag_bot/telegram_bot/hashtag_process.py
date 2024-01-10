@@ -1,79 +1,21 @@
-from sqlalchemy import select
+from icecream import ic
 from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     AsyncSession,
-    create_async_engine,
 )
 from telebot import types
 from hashtag_bot.config.logger import logger
 from hashtag_bot.config.bot import bot
-from hashtag_bot.database.database import DATABASE_URL
-from hashtag_bot.models.telegram import HashTag, TelegramMessage, TelegramChat
-
-
-@logger.catch
-@bot.message_handler(commands=['start'])
-async def start_message(message: types.Message) -> None:
-    await bot.reply_to(message, message.text)
-
-
-@logger.catch
-async def get_telegram_chat(session, message: types.Message) -> TelegramChat:
-    telegram_chat = await session.execute(
-        select(TelegramChat).filter_by(chat_id=message.chat.id)
-    )
-    return telegram_chat.scalar_one_or_none()
-
-
-@logger.catch
-async def get_telegram_message(session, telegram_chat_id) -> TelegramMessage:
-    result = await session.execute(
-        select(TelegramMessage).filter_by(chat_id=telegram_chat_id)
-    )
-    return result.scalar_one_or_none()
-
-
-@logger.catch
-async def record_telegram_chat(session, telegram_chat) -> None:
-    telegram_chat = TelegramChat(chat_id=telegram_chat)
-    session.add(telegram_chat)
-    await session.commit()
-
-
-@logger.catch
-async def record_telegram_message(
-    session,
-    telegram_message_id: int,
-    telegram_chat,
-) -> None:
-    telegram_message = TelegramMessage(
-        message_id=telegram_message_id,
-        chat=telegram_chat,
-    )
-    session.add(telegram_message)
-    await session.commit()
-
-
-@logger.catch
-async def record_hashtags_database(
-    session,
-    hashtag_list,
-    telegram_message,
-) -> list[HashTag]:
-    hashtags = [
-        HashTag(name=name_hashtag.lower(), message=telegram_message)
-        for name_hashtag in hashtag_list
-    ]
-    session.add_all(hashtags)
-    await session.commit()
-    return hashtags
-
-
-async def existing_hashtag(session, telegram_message: TelegramMessage):
-    result = await session.execute(
-        select(HashTag).filter_by(message_id=telegram_message.id)
-    )
-    return result.scalars()
+from hashtag_bot.telegram_bot.get_db_telegram_info import (
+    get_telegram_chat,
+    get_telegram_message,
+    get_hashtag,
+)
+from hashtag_bot.telegram_bot.record_db_telegram_info import (
+    record_telegram_chat,
+    record_telegram_message,
+    record_hashtags_database,
+)
 
 
 @logger.catch
@@ -89,7 +31,6 @@ async def process_hashtags(
         ]
         async with async_session() as session:
             telegram_chat = await get_telegram_chat(session, message)
-
             if not telegram_chat:
                 await record_telegram_chat(
                     session,
@@ -125,9 +66,7 @@ async def process_hashtags(
                     disable_notification=True,
                 )
             else:
-                existing_hashtags = await existing_hashtag(
-                    session, telegram_message
-                )
+                existing_hashtags = await get_hashtag(session, telegram_message)
                 existing_hashtags = ' '.join(
                     [hashtag2.name for hashtag2 in set(existing_hashtags)]
                 )
@@ -155,35 +94,3 @@ async def process_hashtags(
                 hashtags,
                 telegram_message,
             )
-
-
-@logger.catch
-@bot.channel_post_handler(func=lambda message: message.text)
-async def process_hashtag_channel(message: types.Message) -> None:
-    engine = create_async_engine(DATABASE_URL)
-
-    async_session = async_sessionmaker(engine, expire_on_commit=False)
-
-    await process_hashtags(async_session, message)
-
-
-@logger.catch
-@bot.message_handler(func=lambda message: message.text)
-async def process_hashtag_group(message: types.Message) -> None:
-    admins = await bot.get_chat_administrators(message.chat.id)
-    for admin in admins:
-        if (
-            admin.status == 'administrator'
-            and admin.user.username == 'hashgettag_bot'
-            and admin.user.username == 'gethashtag_bot'
-        ):
-            engine = create_async_engine(DATABASE_URL)
-
-            async_session = async_sessionmaker(engine, expire_on_commit=False)
-
-            await process_hashtags(async_session, message)
-
-
-@logger.catch
-async def start_bot():
-    return await bot.infinity_polling()
