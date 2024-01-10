@@ -1,3 +1,4 @@
+from icecream import ic
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from telebot import types
 
@@ -5,6 +6,7 @@ from hashtag_bot.config.logger import logger
 from hashtag_bot.config.bot import bot
 from hashtag_bot.database.database import DATABASE_URL
 from hashtag_bot.telegram_bot.hashtag_process import process_hashtags
+from hashtag_bot.telegram_bot.remove_hashtag import remove_hashtag
 
 
 @logger.catch
@@ -22,6 +24,7 @@ async def start_message_channel(message: types.Message) -> None:
 @logger.catch
 @bot.message_handler(commands=['delete'])
 async def start_message(message: types.Message) -> None:
+    await remove_hashtag(message)
     await bot.reply_to(message, message.text)
 
 
