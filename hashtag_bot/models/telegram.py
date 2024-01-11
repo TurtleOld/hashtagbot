@@ -41,3 +41,15 @@ class HashTag(Base):
         "TelegramMessage",
         back_populates="hashtags",
     )
+    category_hashtags = relationship(
+        'CategoryHashTag', back_populates='hashtags'
+    )
+
+
+class CategoryHashTag(Base):
+    __tablename__ = 'category_hashtag'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=True)
+    hashtag_id = Column(BigInteger, ForeignKey('hashtag.id'))
+    hashtag_name = relationship('HashTag', back_populates='category_hashtags')
