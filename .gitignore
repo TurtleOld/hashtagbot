@@ -163,3 +163,4 @@ cython_debug/
 
 # Custom
 debug.json
+*.json.zip
