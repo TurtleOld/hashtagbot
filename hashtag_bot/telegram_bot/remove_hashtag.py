@@ -1,4 +1,4 @@
-from sqlalchemy import select, delete
+from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from telebot import types
 
@@ -17,13 +17,13 @@ async def get_list_hashtag(hashtag: str) -> list:
 
 
 async def get_hashtag_db(message: types.Message):
-    list_hashtags = await get_list_hashtag(message.text)
+    list_hashtag = await get_list_hashtag(message.text)
     engine = create_async_engine(DATABASE_URL)
     async_session = async_sessionmaker(engine, expire_on_commit=False)
     async with async_session() as session:
         telegram_chat = await get_telegram_chat(session, message)
         telegram_message = await get_telegram_message(session, telegram_chat.id)
-        for hashtag in list_hashtags:
+        for hashtag in list_hashtag:
             await session.execute(
                 delete(HashTag).filter_by(
                     message_id=telegram_message.id, name=hashtag

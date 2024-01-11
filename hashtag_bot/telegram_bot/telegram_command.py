@@ -1,10 +1,10 @@
-from icecream import ic
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from telebot import types
 
 from hashtag_bot.config.logger import logger
 from hashtag_bot.config.bot import bot
 from hashtag_bot.database.database import DATABASE_URL
+from hashtag_bot.telegram_bot.add_group import add_hashtag_group
 from hashtag_bot.telegram_bot.hashtag_process import process_hashtags
 from hashtag_bot.telegram_bot.remove_hashtag import remove_hashtag
 
@@ -31,6 +31,18 @@ async def start_message(message: types.Message) -> None:
 @bot.channel_post_handler(commands=['delete'])
 async def start_message_channel(message: types.Message) -> None:
     await remove_hashtag(message)
+
+
+@logger.catch
+@bot.message_handler(commands=['groups'])
+async def start_message(message: types.Message) -> None:
+    await add_hashtag_group(message)
+
+
+@logger.catch
+@bot.channel_post_handler(commands=['groups'])
+async def start_message_channel(message: types.Message) -> None:
+    await add_hashtag_group(message)
 
 
 @logger.catch
