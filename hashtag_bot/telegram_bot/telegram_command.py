@@ -25,13 +25,12 @@ async def start_message_channel(message: types.Message) -> None:
 @bot.message_handler(commands=['delete'])
 async def start_message(message: types.Message) -> None:
     await remove_hashtag(message)
-    await bot.reply_to(message, message.text)
 
 
 @logger.catch
 @bot.channel_post_handler(commands=['delete'])
 async def start_message_channel(message: types.Message) -> None:
-    await bot.reply_to(message, message.text)
+    await remove_hashtag(message)
 
 
 @logger.catch
