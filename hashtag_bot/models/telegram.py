@@ -42,7 +42,7 @@ class HashTag(Base):
         back_populates="hashtags",
     )
     category_hashtags = relationship(
-        'CategoryHashTag', back_populates='hashtags'
+        'CategoryHashTag', back_populates='hashtag'
     )
 
 
@@ -52,4 +52,4 @@ class CategoryHashTag(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=True)
     hashtag_id = Column(BigInteger, ForeignKey('hashtag.id'))
-    hashtag_name = relationship('HashTag', back_populates='category_hashtags')
+    hashtag = relationship('HashTag', back_populates='category_hashtags')
