@@ -1,4 +1,4 @@
-from icecream import ic
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     AsyncSession,
@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import (
 from telebot import types
 from hashtag_bot.config.logger import logger
 from hashtag_bot.config.bot import bot
+from hashtag_bot.models.telegram import CategoryHashTag
 from hashtag_bot.telegram_bot.get_db_telegram_info import (
     get_telegram_chat,
     get_telegram_message,
@@ -77,11 +78,18 @@ async def process_hashtags(
                 new_text = '&#128204; Список всех хештегов:\n\n' + ' '.join(
                     sorted(combined_hashtags)
                 )
+
                 telegram_chat = await get_telegram_chat(session, message)
                 telegram_message = await get_telegram_message(
                     session,
                     telegram_chat.id,
                 )
+                category = await session.execute(
+                    select(CategoryHashTag).filter_by(
+                        message_id=telegram_message.id,
+                    )
+                )
+
                 if new_text != existing_hashtags:
                     await bot.edit_message_text(
                         chat_id=message.chat.id,
