@@ -1,3 +1,4 @@
+from icecream import ic
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
@@ -89,7 +90,11 @@ async def process_hashtags(
                         message_id=telegram_message.id,
                     )
                 )
-
+                if category:
+                    new_text = (
+                        f'&#128204; Список всех хештегов:\n\n{category.scalar_one_or_none().name}\n'
+                        + ' '.join(sorted(combined_hashtags))
+                    )
                 if new_text != existing_hashtags:
                     await bot.edit_message_text(
                         chat_id=message.chat.id,
