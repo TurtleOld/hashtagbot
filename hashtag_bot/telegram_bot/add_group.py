@@ -21,11 +21,6 @@ async def add_hashtag_group(message: types.Message):
     async with async_session() as session:
         telegram_chat = await get_telegram_chat(session, message)
         telegram_message = await get_telegram_message(session, telegram_chat.id)
-        category = await session.execute(
-            select(CategoryHashTag).filter_by(
-                message_id=telegram_message.id,
-            )
-        )
         for hashtag in list_hashtag:
             result = await session.execute(
                 select(HashTag).filter_by(
@@ -33,31 +28,10 @@ async def add_hashtag_group(message: types.Message):
                     name=hashtag,
                 )
             )
+            category_hashtag = CategoryHashTag(
+                name=group_name,
+                hashtag_id=result.scalar_one_or_none().id,
+                message_id=telegram_message.id,
+            )
+            session.add(category_hashtag)
             await session.commit()
-            if not category.all():
-                category_hashtag = CategoryHashTag(
-                    name=group_name,
-                    hashtag_id=result.scalar_one_or_none().id,
-                    message_id=telegram_message.id,
-                )
-                session.add(category_hashtag)
-                await session.commit()
-        existing_hashtags = await get_hashtag(session, telegram_message)
-        existing_hashtags = ' '.join(
-            sorted([hashtag2.name for hashtag2 in set(existing_hashtags)])
-        )
-        new_text = f'&#128204; Список всех хештегов:\n\n{existing_hashtags}'
-
-        if category.all():
-            new_text = f'&#128204; Список всех хештегов:\n\n{category.scalar_one_or_none().name}\n{category.scalar_one_or_none().hashtag}'
-        if new_text != existing_hashtags:
-            await bot.edit_message_text(
-                chat_id=message.chat.id,
-                message_id=telegram_message.message_id,
-                text=new_text,
-            )
-            await bot.pin_chat_message(
-                chat_id=message.chat.id,
-                message_id=telegram_message.message_id,
-                disable_notification=True,
-            )
