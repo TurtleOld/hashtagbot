@@ -1,5 +1,7 @@
+from typing import List
+
 from sqlalchemy import Column, Integer, ForeignKey, String, BigInteger
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from hashtag_bot.database.database import Base
 
@@ -7,60 +9,63 @@ from hashtag_bot.database.database import Base
 class TelegramChat(Base):
     __tablename__ = "telegram_chat"
 
-    id = Column(Integer, primary_key=True)
-    chat_id = Column(BigInteger)
-    message_id = Column(BigInteger, ForeignKey('telegram_message.id'))
-    message = relationship("TelegramMessage", back_populates="chat")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    chat_id: Mapped[int] = Column(BigInteger)
+
+    message: Mapped['TelegramMessage'] = relationship(back_populates="chat")
 
 
 class TelegramMessage(Base):
     __tablename__ = "telegram_message"
 
-    id = Column(Integer, primary_key=True)
-    message_id = Column(BigInteger)
-    category_id = Column(
-        BigInteger, ForeignKey('category_hashtag.id'), nullable=True
-    )
-    chat_id = Column(BigInteger, ForeignKey('telegram_chat.id'))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    message_id: Mapped[int] = Column(BigInteger)
 
-    chat = relationship(
-        "TelegramChat", back_populates="message", foreign_keys=[chat_id]
+    chat_id: Mapped[int] = mapped_column(
+        ForeignKey('telegram_chat.id'),
+        nullable=True,
     )
-    category = relationship(
-        'CategoryHashTag', back_populates='message', foreign_keys=[category_id]
+    chat: Mapped['TelegramChat'] = relationship(back_populates="message")
+
+    categories: Mapped['CategoryHashTag'] = relationship(
+        back_populates='message',
     )
-    hashtags = relationship(
-        "HashTag", back_populates="message", foreign_keys=[id]
-    )
+
+    hashtags: Mapped[List['HashTag']] = relationship()
 
 
 class HashTag(Base):
     __tablename__ = "hashtag"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    category_id = Column(
-        BigInteger, ForeignKey('category_hashtag.id'), nullable=True
-    )
-    message_id = Column(BigInteger, ForeignKey("telegram_message.id"))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = Column(String)
 
-    category = relationship(
-        'CategoryHashTag', back_populates='hashtags', foreign_keys=[category_id]
+    message_id: Mapped[int] = mapped_column(
+        ForeignKey("telegram_message.id"),
+        nullable=True,
     )
-    message = relationship(
-        "TelegramMessage", back_populates="hashtags", foreign_keys=[message_id]
+    message: Mapped['TelegramMessage'] = relationship(back_populates="hashtags")
+
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey('category_hashtag.id'),
+        nullable=True,
+    )
+    category: Mapped['CategoryHashTag'] = relationship(
+        back_populates='hashtags'
     )
 
 
 class CategoryHashTag(Base):
     __tablename__ = 'category_hashtag'
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = Column(String, nullable=True)
 
-    messages = relationship(
-        "TelegramMessage", back_populates="category", foreign_keys=[id]
+    message_id: Mapped[int] = mapped_column(
+        ForeignKey("telegram_message.id"),
+        nullable=True,
     )
-    hashtags = relationship(
-        "HashTag", back_populates="category", foreign_keys=[id]
+    message: Mapped['TelegramMessage'] = relationship(
+        back_populates="categories",
     )
+    hashtags: Mapped[List['HashTag']] = relationship()
