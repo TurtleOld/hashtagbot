@@ -34,13 +34,13 @@ async def start_message_channel(message: types.Message) -> None:
 
 
 @logger.catch
-@bot.message_handler(commands=['groups'])
+@bot.message_handler(commands=['category'])
 async def start_message(message: types.Message) -> None:
     await add_hashtag_group(message)
 
 
 @logger.catch
-@bot.channel_post_handler(commands=['groups'])
+@bot.channel_post_handler(commands=['category'])
 async def start_message_channel(message: types.Message) -> None:
     await add_hashtag_group(message)
 
