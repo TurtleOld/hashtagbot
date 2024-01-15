@@ -16,8 +16,6 @@ from hashtag_bot.telegram_bot.get_db_telegram_info import (
 async def add_hashtag_group(message: types.Message):
     input_user = message.text
     category_name = re.findall(r'"[^"]*"|\S+', input_user)[1]
-    print(category_name)
-    # category_name = [word for word in message.text.split('"')][1]
     engine = create_async_engine(DATABASE_URL)
     async_session = async_sessionmaker(engine, expire_on_commit=False)
     async with async_session() as session:
@@ -31,12 +29,17 @@ async def add_hashtag_group(message: types.Message):
         )
         if not category.scalar_one_or_none():
             category_hashtag = CategoryHashTag(
-                name=category_name,
+                name=category_name.replace('"', ''),
                 message_id=telegram_message.id,
             )
             session.add(category_hashtag)
             await session.commit()
+            await bot.send_message(
+                message.chat.id,
+                f'Категория "{category_name}" добавлена.',
+            )
         else:
             await bot.send_message(
-                message.chat.id, f'Category "{category_name}" already exists'
+                message.chat.id,
+                f'Категория "{category_name}" уже существует.',
             )
