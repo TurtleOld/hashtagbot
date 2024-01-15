@@ -36,9 +36,14 @@ class HashTag(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    category_id = Column(
+        BigInteger,
+        ForeignKey('category_hashtag.id'),
+        nullable=True,
+    )
     category = relationship(
         'CategoryHashTag',
-        back_populates='hashtags',
+        back_populates='hashtag',
     )
     message_id = Column(BigInteger, ForeignKey("telegram_message.id"))
     message = relationship(
