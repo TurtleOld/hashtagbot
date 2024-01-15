@@ -17,7 +17,6 @@ class TelegramMessage(Base):
         uselist=False,
         single_parent=True,
     )
-    category_hashtag = relationship('CategoryHashTag', back_populates='message')
 
 
 class TelegramChat(Base):
@@ -37,13 +36,14 @@ class HashTag(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    category = relationship(
+        'CategoryHashTag',
+        back_populates='hashtags',
+    )
     message_id = Column(BigInteger, ForeignKey("telegram_message.id"))
     message = relationship(
         "TelegramMessage",
         back_populates="hashtags",
-    )
-    category_hashtags = relationship(
-        'CategoryHashTag', back_populates='hashtag'
     )
 
 
@@ -52,8 +52,6 @@ class CategoryHashTag(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=True)
-    hashtag_id = Column(BigInteger, ForeignKey('hashtag.id'))
-    hashtag = relationship('HashTag', back_populates='category_hashtags')
     message_id = Column(BigInteger, ForeignKey("telegram_message.id"))
     message = relationship(
         "TelegramMessage",
