@@ -1,3 +1,5 @@
+import re
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from telebot import types
@@ -12,7 +14,10 @@ from hashtag_bot.telegram_bot.get_db_telegram_info import (
 
 
 async def add_hashtag_group(message: types.Message):
-    category_name = [word for word in message.text.split('"')][1]
+    input_user = message.text
+    category_name = re.findall(r'"[^"]*"|\S+', input_user)[1]
+    print(category_name)
+    # category_name = [word for word in message.text.split('"')][1]
     engine = create_async_engine(DATABASE_URL)
     async_session = async_sessionmaker(engine, expire_on_commit=False)
     async with async_session() as session:
