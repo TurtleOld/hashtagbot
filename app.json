@@ -5,7 +5,7 @@
     }
   },
   "healthchecks": {
-    "web": [
+    "worker": [
       {
         "attempts": 3,
         "timeout": 20,
