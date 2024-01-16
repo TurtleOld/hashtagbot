@@ -60,13 +60,13 @@ async def start_message_channel(message: types.Message) -> None:
 
 
 @logger.catch
-@bot.message_handler(commands=['update'])
+@bot.message_handler(commands=['commit'])
 async def start_message(message: types.Message) -> None:
     await message_formation(message)
 
 
 @logger.catch
-@bot.channel_post_handler(commands=['update'])
+@bot.channel_post_handler(commands=['commit'])
 async def start_message_channel(message: types.Message) -> None:
     await message_formation(message)
 
