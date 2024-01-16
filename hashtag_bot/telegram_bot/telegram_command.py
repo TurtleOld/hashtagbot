@@ -4,7 +4,8 @@ from telebot import types
 from hashtag_bot.config.logger import logger
 from hashtag_bot.config.bot import bot
 from hashtag_bot.database.database import DATABASE_URL
-from hashtag_bot.telegram_bot.add_group import add_hashtag_group
+from hashtag_bot.telegram_bot.add_group import add_group
+from hashtag_bot.telegram_bot.add_hashtag_in_group import add_hashtag_group
 from hashtag_bot.telegram_bot.hashtag_process import process_hashtags
 from hashtag_bot.telegram_bot.remove_hashtag import remove_hashtag
 
@@ -36,11 +37,23 @@ async def start_message_channel(message: types.Message) -> None:
 @logger.catch
 @bot.message_handler(commands=['category'])
 async def start_message(message: types.Message) -> None:
-    await add_hashtag_group(message)
+    await add_group(message)
 
 
 @logger.catch
 @bot.channel_post_handler(commands=['category'])
+async def start_message_channel(message: types.Message) -> None:
+    await add_group(message)
+
+
+@logger.catch
+@bot.message_handler(commands=['add_hashtag'])
+async def start_message(message: types.Message) -> None:
+    await add_hashtag_group(message)
+
+
+@logger.catch
+@bot.channel_post_handler(commands=['add_hashtag'])
 async def start_message_channel(message: types.Message) -> None:
     await add_hashtag_group(message)
 
