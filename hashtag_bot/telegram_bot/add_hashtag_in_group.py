@@ -16,8 +16,6 @@ async def add_hashtag_group(message: types.Message):
     input_user = message.text.split('"')
     category_name = input_user[1]
     hashtags = [hashtag.strip() for hashtag in input_user[2:]][0].split()
-    print(category_name)
-    print(hashtags)
     engine = create_async_engine(DATABASE_URL)
     async_session = async_sessionmaker(engine, expire_on_commit=False)
     async with async_session() as session:
