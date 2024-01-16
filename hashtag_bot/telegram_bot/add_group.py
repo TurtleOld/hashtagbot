@@ -13,9 +13,9 @@ from hashtag_bot.telegram_bot.get_db_telegram_info import (
 )
 
 
-async def add_hashtag_group(message: types.Message):
+async def add_group(message: types.Message):
     input_user = message.text
-    category_name = re.findall(r'"[^"]*"|\S+', input_user)[1]
+    category_name = re.findall(r'"[^"]*"|\S+', input_user)[1].replace('"', '')
     engine = create_async_engine(DATABASE_URL)
     async_session = async_sessionmaker(engine, expire_on_commit=False)
     async with async_session() as session:
@@ -27,7 +27,7 @@ async def add_hashtag_group(message: types.Message):
                 message_id=telegram_message.id,
             )
         )
-        if not category.scalar_one_or_none():
+        if not category.all():
             category_hashtag = CategoryHashTag(
                 name=category_name.replace('"', ''),
                 message_id=telegram_message.id,
