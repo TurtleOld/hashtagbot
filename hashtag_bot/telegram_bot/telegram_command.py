@@ -85,17 +85,20 @@ async def process_hashtag_channel(message: types.Message) -> None:
 @bot.message_handler(func=lambda message: message.text)
 async def process_hashtag_group(message: types.Message) -> None:
     admins = await bot.get_chat_administrators(message.chat.id)
-    for admin in admins:
-        if (
-            admin.status in ['administrator', 'creator']
-            or admin.user.username == 'hashgettag_bot'
-            or admin.user.username == 'gethashtag_bot'
-        ):
-            engine = create_async_engine(DATABASE_URL)
+    administrator = [
+        admin.status for admin in admins if admin.status in ['admin', 'creator']
+    ]
+    username = [
+        admin.user.username
+        for admin in admins
+        if admin.user.username in ['hashgettag_bot', 'gethashtag_bot']
+    ]
+    if administrator or username:
+        engine = create_async_engine(DATABASE_URL)
 
-            async_session = async_sessionmaker(engine, expire_on_commit=False)
+        async_session = async_sessionmaker(engine, expire_on_commit=False)
 
-            await process_hashtags(async_session, message)
+        await process_hashtags(async_session, message)
 
 
 @logger.catch
