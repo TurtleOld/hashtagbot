@@ -1,3 +1,5 @@
+from sqlalchemy import select
+
 from hashtag_bot.config.logger import logger
 from hashtag_bot.models.telegram import TelegramMessage, HashTag, TelegramChat
 
@@ -28,11 +30,22 @@ async def record_hashtags_database(
     session,
     hashtag_list,
     telegram_message,
-) -> list[HashTag]:
-    hashtags = [
-        HashTag(name=name_hashtag.lower(), message=telegram_message)
-        for name_hashtag in hashtag_list
-    ]
-    session.add_all(hashtags)
-    await session.commit()
+) -> list:
+    hashtags = []
+    for item_hashtag in hashtag_list:
+        hashtag = await session.execute(
+            select(HashTag)
+            .filter(
+                HashTag.name == item_hashtag,
+                HashTag.message_id == telegram_message.id,
+            )
+            .distinct()
+        )
+        if not hashtag.scalars().all():
+            new_hashtag = HashTag(
+                name=item_hashtag.lower(), message=telegram_message
+            )
+            session.add(new_hashtag)
+            await session.commit()
+            hashtags.append(new_hashtag)
     return hashtags
