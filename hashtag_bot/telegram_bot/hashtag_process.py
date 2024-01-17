@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     AsyncSession,
 )
-from telebot import types
+from telebot import types, asyncio_helper
 from hashtag_bot.config.logger import logger
 from hashtag_bot.config.bot import bot
 
@@ -62,11 +62,28 @@ async def process_hashtags(
                     session,
                     telegram_chat.id,
                 )
-
+            try:
                 await bot.pin_chat_message(
                     chat_id=telegram_chat.chat_id,
                     message_id=telegram_message.message_id,
                     disable_notification=True,
+                )
+            except asyncio_helper.ApiTelegramException:
+                sent_hashtags = await bot.send_message(
+                    message.chat.id,
+                    '&#128204; Список всех хештегов:\n\n'
+                    + ' '.join([hashtag for hashtag in sorted(set(hashtags))]),
+                )
+                await record_telegram_message(
+                    session,
+                    sent_hashtags.message_id,
+                    telegram_chat,
+                )
+
+                telegram_chat = await get_telegram_chat(session, message)
+                telegram_message = await get_telegram_message(
+                    session,
+                    telegram_chat.id,
                 )
             await record_hashtags_database(
                 session,
