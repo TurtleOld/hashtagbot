@@ -1,5 +1,3 @@
-import re
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from telebot import types
@@ -21,7 +19,10 @@ async def add_hashtag_group(message: types.Message):
     async_session = async_sessionmaker(engine, expire_on_commit=False)
     async with async_session() as session:
         telegram_chat = await get_telegram_chat(session, message)
-        telegram_message = await get_telegram_message(session, telegram_chat.id)
+        telegram_message = await get_telegram_message(
+            session,
+            telegram_chat.id,
+        )
         category_queryset = await session.execute(
             select(CategoryHashTag).filter_by(
                 name=category_name,
@@ -43,6 +44,7 @@ async def add_hashtag_group(message: types.Message):
                 string_hashtags = ' '.join(hashtags)
                 await bot.send_message(
                     message.chat.id,
-                    f'Hashtag[s]: {string_hashtags} added to {category.name} group',
+                    f'Hashtag[s]: {string_hashtags} '
+                    f'added to {category.name} group',
                 )
                 await session.commit()

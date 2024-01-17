@@ -20,7 +20,10 @@ async def add_group(message: types.Message):
     async_session = async_sessionmaker(engine, expire_on_commit=False)
     async with async_session() as session:
         telegram_chat = await get_telegram_chat(session, message)
-        telegram_message = await get_telegram_message(session, telegram_chat.id)
+        telegram_message = await get_telegram_message(
+            session,
+            telegram_chat.id,
+        )
         category = await session.execute(
             select(CategoryHashTag).filter_by(
                 name=category_name,

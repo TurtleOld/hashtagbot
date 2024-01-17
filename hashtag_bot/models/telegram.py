@@ -1,6 +1,6 @@
 from typing import List
 
-from sqlalchemy import Column, Integer, ForeignKey, String, BigInteger
+from sqlalchemy import Column, ForeignKey, String, BigInteger
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from hashtag_bot.database.database import Base
@@ -44,7 +44,9 @@ class HashTag(Base):
         ForeignKey("telegram_message.id"),
         nullable=True,
     )
-    message: Mapped['TelegramMessage'] = relationship(back_populates="hashtags")
+    message: Mapped['TelegramMessage'] = relationship(
+        back_populates="hashtags",
+    )
 
     category_id: Mapped[int] = mapped_column(
         ForeignKey('category_hashtag.id'),

@@ -25,49 +25,49 @@ async def start_message_channel(message: types.Message) -> None:
 
 @logger.catch
 @bot.message_handler(commands=['delete'])
-async def start_message(message: types.Message) -> None:
+async def delete_hashtag_group(message: types.Message) -> None:
     await remove_hashtag(message)
 
 
 @logger.catch
 @bot.channel_post_handler(commands=['delete'])
-async def start_message_channel(message: types.Message) -> None:
+async def delete_hashtag_channel(message: types.Message) -> None:
     await remove_hashtag(message)
 
 
 @logger.catch
 @bot.message_handler(commands=['category'])
-async def start_message(message: types.Message) -> None:
+async def add_category_group(message: types.Message) -> None:
     await add_group(message)
 
 
 @logger.catch
 @bot.channel_post_handler(commands=['category'])
-async def start_message_channel(message: types.Message) -> None:
+async def add_category_channel(message: types.Message) -> None:
     await add_group(message)
 
 
 @logger.catch
 @bot.message_handler(commands=['hashtag'])
-async def start_message(message: types.Message) -> None:
+async def handler_add_hashtag_group(message: types.Message) -> None:
     await add_hashtag_group(message)
 
 
 @logger.catch
 @bot.channel_post_handler(commands=['hashtag'])
-async def start_message_channel(message: types.Message) -> None:
+async def handler_add_hashtag_channel(message: types.Message) -> None:
     await add_hashtag_group(message)
 
 
 @logger.catch
 @bot.message_handler(commands=['commit'])
-async def start_message(message: types.Message) -> None:
+async def commit_group(message: types.Message) -> None:
     await message_formation(message)
 
 
 @logger.catch
 @bot.channel_post_handler(commands=['commit'])
-async def start_message_channel(message: types.Message) -> None:
+async def commit_channel(message: types.Message) -> None:
     await message_formation(message)
 
 
@@ -86,7 +86,13 @@ async def process_hashtag_channel(message: types.Message) -> None:
 async def process_hashtag_group(message: types.Message) -> None:
     admins = await bot.get_chat_administrators(message.chat.id)
     administrator = [
-        admin.status for admin in admins if admin.status in ['admin', 'creator']
+        admin.status
+        for admin in admins
+        if admin.status
+        in [
+            'admin',
+            'creator',
+        ]
     ]
     username = [
         admin.user.username

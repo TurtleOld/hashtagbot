@@ -19,7 +19,10 @@ async def message_formation(message):
     string_keys += '&#128204; Список всех хештегов:\n\n'
     async with async_session() as session:
         telegram_chat = await get_telegram_chat(session, message)
-        telegram_message = await get_telegram_message(session, telegram_chat.id)
+        telegram_message = await get_telegram_message(
+            session,
+            telegram_chat.id,
+        )
         result_with_category = defaultdict(list)
         result_with_category.clear()
         result_without_category = []
