@@ -15,3 +15,6 @@ install:
 
 export-requirements:
 	@poetry export -f requirements.txt --output requirements.txt --without-hashes
+
+coverage:
+	@poetry run coverage
