@@ -63,9 +63,14 @@ async def message_formation(message):
                 ' '.join(sorted(set(result_without_category))) + '\n\n'
             )
 
-        await session.commit()
+        await bot.pin_chat_message(
+            chat_id=message.chat.id,
+            message_id=telegram_message.message_id,
+            disable_notification=True,
+        )
         await bot.edit_message_text(
             chat_id=message.chat.id,
             message_id=telegram_message.message_id,
             text=string_keys,
         )
+        await session.commit()

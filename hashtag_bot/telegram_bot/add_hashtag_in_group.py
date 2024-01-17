@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from telebot import types
 
+from hashtag_bot.config.bot import bot
 from hashtag_bot.database.database import DATABASE_URL
 from hashtag_bot.models.telegram import CategoryHashTag, HashTag
 from hashtag_bot.telegram_bot.get_db_telegram_info import (
@@ -39,4 +40,9 @@ async def add_hashtag_group(message: types.Message):
                 )
                 result_hashtag = hashtag_queryset.scalars().all()
                 result_hashtag[0].category_id = category.id
+                string_hashtags = ' '.join(hashtags)
+                await bot.send_message(
+                    message.chat.id,
+                    f'Hashtag[s]: {string_hashtags} added to {category.name} group',
+                )
                 await session.commit()
