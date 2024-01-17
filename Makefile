@@ -12,3 +12,6 @@ docker-stop:
 
 install:
 	@poetry install
+
+export-requirements:
+	@poetry export -f requirements.txt --output requirements.txt --without-hashes
