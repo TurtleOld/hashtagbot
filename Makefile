@@ -9,3 +9,6 @@ docker-start:
 
 docker-stop:
 	docker compose down || true
+
+install:
+	@poetry install
