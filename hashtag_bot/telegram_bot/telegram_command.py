@@ -1,3 +1,4 @@
+"""Module telegram command."""
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from telebot import types
 
@@ -14,66 +15,109 @@ from hashtag_bot.telegram_bot.remove_hashtag import remove_hashtag
 @logger.catch
 @bot.message_handler(commands=['start'])
 async def start_message(message: types.Message) -> None:
+    """
+    Function handler messages from group.
+    /start command handler function.
+    """
     await bot.reply_to(message, message.text)
 
 
 @logger.catch
 @bot.channel_post_handler(commands=['start'])
 async def start_message_channel(message: types.Message) -> None:
+    """
+    Function handler messages from channel.
+    /start command handler function.
+    """
     await bot.reply_to(message, message.text)
 
 
 @logger.catch
 @bot.message_handler(commands=['delete'])
 async def delete_hashtag_group(message: types.Message) -> None:
+    """
+    Function handler messages from group.
+    Handler function for deleting hashtags.
+    """
     await remove_hashtag(message)
 
 
 @logger.catch
 @bot.channel_post_handler(commands=['delete'])
 async def delete_hashtag_channel(message: types.Message) -> None:
+    """
+    Function handler messages from channel.
+    Handler function for deleting hashtags.
+    """
     await remove_hashtag(message)
 
 
 @logger.catch
 @bot.message_handler(commands=['category'])
 async def add_category_group(message: types.Message) -> None:
+    """
+    Function handler messages from channel.
+    Handler function for adding categories.
+    """
     await add_group(message)
 
 
 @logger.catch
 @bot.channel_post_handler(commands=['category'])
 async def add_category_channel(message: types.Message) -> None:
+    """
+    Function handler messages from channel.
+    Handler function for adding categories.
+    """
     await add_group(message)
 
 
 @logger.catch
-@bot.message_handler(commands=['hashtag'])
+@bot.message_handler(commands=['add_hashtag_category'])
 async def handler_add_hashtag_group(message: types.Message) -> None:
+    """
+    Function handler messages from channel.
+    Handler function for adding hashtags to a category.
+    """
     await add_hashtag_group(message)
 
 
 @logger.catch
-@bot.channel_post_handler(commands=['hashtag'])
+@bot.channel_post_handler(commands=['add_hashtag_category'])
 async def handler_add_hashtag_channel(message: types.Message) -> None:
+    """
+    Function handler messages from channel.
+    Handler function for adding hashtags to a category.
+    """
     await add_hashtag_group(message)
 
 
 @logger.catch
 @bot.message_handler(commands=['commit'])
 async def commit_group(message: types.Message) -> None:
+    """
+    Function handler messages from group.
+    The function is needed in order for the text in the pinned message
+    to be formed according to a template.
+    """
     await message_formation(message)
 
 
 @logger.catch
 @bot.channel_post_handler(commands=['commit'])
 async def commit_channel(message: types.Message) -> None:
+    """
+    Function handler messages from channel.
+    The function is needed in order for the text in the pinned message
+    to be formed according to a template.
+    """
     await message_formation(message)
 
 
 @logger.catch
 @bot.channel_post_handler(func=lambda message: message.text)
 async def process_hashtag_channel(message: types.Message) -> None:
+    """Function handler messages from channel."""
     engine = create_async_engine(DATABASE_URL)
 
     async_session = async_sessionmaker(engine, expire_on_commit=False)
@@ -84,6 +128,10 @@ async def process_hashtag_channel(message: types.Message) -> None:
 @logger.catch
 @bot.message_handler(func=lambda message: message.text)
 async def process_hashtag_group(message: types.Message) -> None:
+    """
+    Function handler messages from group.
+    Only administrators can write messages with hashtags.
+    """
     admins = await bot.get_chat_administrators(message.chat.id)
     administrator = [
         admin.status
@@ -109,4 +157,5 @@ async def process_hashtag_group(message: types.Message) -> None:
 
 @logger.catch
 async def start_bot():
+    """Function for start telegram bot"""
     return await bot.infinity_polling()

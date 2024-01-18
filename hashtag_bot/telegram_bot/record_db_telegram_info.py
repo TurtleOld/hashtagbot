@@ -1,3 +1,4 @@
+"""A module for functions for writing data to a database."""
 from sqlalchemy import select
 
 from hashtag_bot.config.logger import logger
@@ -6,6 +7,7 @@ from hashtag_bot.models.telegram import TelegramMessage, HashTag, TelegramChat
 
 @logger.catch
 async def record_telegram_chat(session, telegram_chat) -> None:
+    """Adding telegram chat id to the database."""
     telegram_chat = TelegramChat(chat_id=telegram_chat)
     session.add(telegram_chat)
     await session.commit()
@@ -17,6 +19,7 @@ async def record_telegram_message(
     telegram_message_id: int,
     telegram_chat,
 ) -> None:
+    """Adding telegram message id to the database."""
     telegram_message = TelegramMessage(
         message_id=telegram_message_id,
         chat=telegram_chat,
@@ -31,6 +34,7 @@ async def record_hashtags_database(
     hashtag_list,
     telegram_message,
 ) -> list:
+    """Adding hashtags to the database."""
     hashtags = []
     for item_hashtag in hashtag_list:
         hashtag = await session.execute(

@@ -1,27 +1,23 @@
+"""Formatting text for telegram pin message."""
 from collections import defaultdict
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-
 from hashtag_bot.config.bot import bot
-from hashtag_bot.database.database import DATABASE_URL
 from hashtag_bot.models.telegram import CategoryHashTag, HashTag
-from hashtag_bot.telegram_bot.get_db_telegram_info import (
-    get_telegram_chat,
-    get_telegram_message,
+from hashtag_bot.telegram_bot.common import (
+    get_telegram_message_chat,
+    create_database_session,
 )
 
 
 async def message_formation(message):
-    engine = create_async_engine(DATABASE_URL)
-    async_session = async_sessionmaker(engine, expire_on_commit=False)
+    """Formatting text for telegram pin message."""
     string_keys = ''
     string_keys += '&#128204; Список всех хештегов:\n\n'
-    async with async_session() as session:
-        telegram_chat = await get_telegram_chat(session, message)
-        telegram_message = await get_telegram_message(
+    async with create_database_session() as session:
+        _, telegram_message = get_telegram_message_chat(
             session,
-            telegram_chat.id,
+            message,
         )
         result_with_category = defaultdict(list)
         result_with_category.clear()

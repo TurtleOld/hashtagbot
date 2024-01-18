@@ -1,3 +1,4 @@
+"""Settings telegram bot."""
 import os
 
 from dotenv import load_dotenv

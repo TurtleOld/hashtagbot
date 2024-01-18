@@ -1,3 +1,4 @@
+"""Module for adding hashtags to the database."""
 from collections import OrderedDict
 
 from sqlalchemy.ext.asyncio import (
@@ -24,6 +25,7 @@ async def process_hashtags(
     async_session: async_sessionmaker[AsyncSession],
     message: types.Message,
 ) -> None:
+    """The handler function for adding hashtags to the database."""
     if '#' in message.text:
         hashtags = [
             name_hashtag.lower()
@@ -49,7 +51,7 @@ async def process_hashtags(
                 sent_hashtags = await bot.send_message(
                     message.chat.id,
                     '&#128204; Список всех хештегов:\n\n'
-                    + ' '.join([hashtag for hashtag in sorted(set(hashtags))]),
+                    + ' '.join(list(sorted(set(hashtags)))),
                 )
                 await record_telegram_message(
                     session,
@@ -72,7 +74,7 @@ async def process_hashtags(
                 sent_hashtags = await bot.send_message(
                     message.chat.id,
                     '&#128204; Список всех хештегов:\n\n'
-                    + ' '.join([hashtag for hashtag in sorted(set(hashtags))]),
+                    + ' '.join(list(sorted(set(hashtags)))),
                 )
                 await record_telegram_message(
                     session,

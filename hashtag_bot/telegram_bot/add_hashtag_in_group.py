@@ -1,27 +1,24 @@
+"""Module for adding hashtag[s] to category"""
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from telebot import types
 
 from hashtag_bot.config.bot import bot
-from hashtag_bot.database.database import DATABASE_URL
 from hashtag_bot.models.telegram import CategoryHashTag, HashTag
-from hashtag_bot.telegram_bot.get_db_telegram_info import (
-    get_telegram_chat,
-    get_telegram_message,
+from hashtag_bot.telegram_bot.common import (
+    create_database_session,
+    get_telegram_message_chat,
 )
 
 
 async def add_hashtag_group(message: types.Message):
+    """Function for adding hashtag[s] to category"""
     input_user = message.text.split('"')
     category_name = input_user[1]
     hashtags = [hashtag.strip() for hashtag in input_user[2:]][0].split()
-    engine = create_async_engine(DATABASE_URL)
-    async_session = async_sessionmaker(engine, expire_on_commit=False)
-    async with async_session() as session:
-        telegram_chat = await get_telegram_chat(session, message)
-        telegram_message = await get_telegram_message(
+    async with create_database_session() as session:
+        _, telegram_message = get_telegram_message_chat(
             session,
-            telegram_chat.id,
+            message,
         )
         category_queryset = await session.execute(
             select(CategoryHashTag).filter_by(

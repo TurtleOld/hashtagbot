@@ -1,30 +1,27 @@
+"""Module for functions on removing hashtags"""
 from sqlalchemy import delete
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from telebot import types
-
 from hashtag_bot.config.bot import bot
-from hashtag_bot.database.database import DATABASE_URL
 from hashtag_bot.models.telegram import HashTag
-from hashtag_bot.telegram_bot.get_db_telegram_info import (
-    get_telegram_chat,
-    get_telegram_message,
-    get_hashtag,
+from hashtag_bot.telegram_bot.common import (
+    get_telegram_message_chat,
+    create_database_session,
 )
+from hashtag_bot.telegram_bot.get_db_telegram_info import get_hashtag
 
 
 async def get_list_hashtag(hashtag: str) -> list:
+    """Functing getting list hashtags."""
     return hashtag.split()[1:]
 
 
-async def get_hashtag_db(message: types.Message):
+async def remove_hashtag_db(message: types.Message):
+    """Function for removing hashtag[s] from database."""
     list_hashtag = await get_list_hashtag(message.text)
-    engine = create_async_engine(DATABASE_URL)
-    async_session = async_sessionmaker(engine, expire_on_commit=False)
-    async with async_session() as session:
-        telegram_chat = await get_telegram_chat(session, message)
-        telegram_message = await get_telegram_message(
+    async with create_database_session() as session:
+        _, telegram_message = get_telegram_message_chat(
             session,
-            telegram_chat.id,
+            message,
         )
         for hashtag in list_hashtag:
             await session.execute(
@@ -53,4 +50,5 @@ async def get_hashtag_db(message: types.Message):
 
 
 async def remove_hashtag(message: types.Message) -> None:
-    await get_hashtag_db(message)
+    """Function for removing hashtag[s]."""
+    await remove_hashtag_db(message)

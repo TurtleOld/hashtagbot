@@ -1,3 +1,4 @@
+"""Module for logging."""
 from loguru import logger
 
 logger.add(
