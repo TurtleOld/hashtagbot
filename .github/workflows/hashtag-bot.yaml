@@ -32,7 +32,7 @@ jobs:
       - name: Python Pylint Github Action
         uses: fylein/python-pylint-github-action@v4
         with:
-          args: pylint --rcfile=.pylintrc hashtag_bot/
+          args: pylint --rcfile=.pylintrc hashtag_bot
 
 
       - name: Test & publish code coverage
