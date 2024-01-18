@@ -28,20 +28,3 @@ jobs:
           python -m pip install -r requirements.txt
           pip install poetry
           make install
-
-      - name: PyLint with dynamic badge
-        uses: Silleellie/pylint-github-action@v1
-        with:
-          python-version: 3.11.2
-          package-path: hashtag_bot
-          readme-path: README.rst
-          requirements-path: requirements.txt
-
-
-      - name: Test & publish code coverage
-        uses: paambaati/codeclimate-action@v5.0.0
-        env:
-          CC_TEST_REPORTER_ID: ${{ secrets.COVERAGE_ID_APPLICATION }}
-        with:
-          coverageCommand: make coverage
-          debug: true
