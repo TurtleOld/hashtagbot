@@ -29,10 +29,13 @@ jobs:
           pip install poetry
           make install
 
-      - name: Python Pylint Github Action
-        uses: fylein/python-pylint-github-action@v4
+      - name: PyLint with dynamic badge
+        uses: Silleellie/pylint-github-action@v1
         with:
-          args: pip3 install -r requirements.txt && pylint --rcfile=.pylintrc hashtag_bot
+          python-version: 3.11.2
+          package-path: hashtag_bot
+          readme-path: README.rst
+          requirements-path: requirements.txt
 
 
       - name: Test & publish code coverage
