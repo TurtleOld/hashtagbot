@@ -29,6 +29,12 @@ jobs:
           pip install poetry
           make install
 
+      - name: Python Pylint Github Action
+        uses: fylein/python-pylint-github-action@v4
+        with:
+          args: pylint --rcfile=.pylintrc hashtag_bot/
+
+
       - name: Test & publish code coverage
         uses: paambaati/codeclimate-action@v5.0.0
         env:
