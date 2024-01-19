@@ -20,20 +20,24 @@ from hashtag_bot.telegram_bot.record_db_telegram_info import (
 )
 
 
-@logger.catch
-async def process_hashtags(
-    async_session: async_sessionmaker[AsyncSession],
-    message: types.Message,
-) -> None:
-    """The handler function for adding hashtags to the database."""
+async def get_hashtag_list(message):
     if '#' in message.text:
         hashtags = [
             name_hashtag.lower()
             for name_hashtag in message.text.split()
             if name_hashtag.startswith('#')
         ]
-        hashtags = list(OrderedDict.fromkeys(hashtags))
+        return list(OrderedDict.fromkeys(hashtags))
 
+
+@logger.catch
+async def process_hashtags(
+    async_session: async_sessionmaker[AsyncSession],
+    message: types.Message,
+) -> None:
+    """The handler function for adding hashtags to the database."""
+    hashtags = await get_hashtag_list(message)
+    if hashtags:
         async with async_session() as session:
             telegram_chat = await get_telegram_chat(session, message)
             if not telegram_chat:

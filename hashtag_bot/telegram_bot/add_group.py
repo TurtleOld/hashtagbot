@@ -16,7 +16,7 @@ async def add_group(message: types.Message):
     input_user = message.text
     category_name = re.findall(r'"[^"]*"|\S+', input_user)[1].replace('"', '')
     async with create_database_session() as session:
-        _, telegram_message = get_telegram_message_chat(
+        _, telegram_message = await get_telegram_message_chat(
             session,
             message,
         )

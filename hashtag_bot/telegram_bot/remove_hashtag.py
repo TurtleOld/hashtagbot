@@ -19,7 +19,7 @@ async def remove_hashtag_db(message: types.Message):
     """Function for removing hashtag[s] from database."""
     list_hashtag = await get_list_hashtag(message.text)
     async with create_database_session() as session:
-        _, telegram_message = get_telegram_message_chat(
+        _, telegram_message = await get_telegram_message_chat(
             session,
             message,
         )

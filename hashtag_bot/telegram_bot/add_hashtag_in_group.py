@@ -16,7 +16,7 @@ async def add_hashtag_group(message: types.Message):
     category_name = input_user[1]
     hashtags = [hashtag.strip() for hashtag in input_user[2:]][0].split()
     async with create_database_session() as session:
-        _, telegram_message = get_telegram_message_chat(
+        _, telegram_message = await get_telegram_message_chat(
             session,
             message,
         )

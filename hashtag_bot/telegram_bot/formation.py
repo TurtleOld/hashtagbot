@@ -14,8 +14,8 @@ async def message_formation(message):
     """Formatting text for telegram pin message."""
     string_keys = ''
     string_keys += '&#128204; Список всех хештегов:\n\n'
-    async with create_database_session() as session:
-        _, telegram_message = get_telegram_message_chat(
+    async with await create_database_session() as session:
+        _, telegram_message = await get_telegram_message_chat(
             session,
             message,
         )
