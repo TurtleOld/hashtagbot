@@ -21,6 +21,7 @@ from hashtag_bot.telegram_bot.record_db_telegram_info import (
 
 
 async def get_hashtag_list(message):
+    """Formation list hashtags"""
     if '#' in message.text:
         hashtags = [
             name_hashtag.lower()
@@ -28,6 +29,15 @@ async def get_hashtag_list(message):
             if name_hashtag.startswith('#')
         ]
         return list(OrderedDict.fromkeys(hashtags))
+
+
+async def send_format_initial_message(message, hashtags):
+    """Sending the generated initial message."""
+    return await bot.send_message(
+        message.chat.id,
+        '&#128204; Список всех хештегов:\n\n'
+        + ' '.join(list(sorted(set(hashtags)))),
+    )
 
 
 @logger.catch
@@ -52,14 +62,13 @@ async def process_hashtags(
                 telegram_chat.id,
             )
             if not telegram_message:
-                sent_hashtags = await bot.send_message(
-                    message.chat.id,
-                    '&#128204; Список всех хештегов:\n\n'
-                    + ' '.join(list(sorted(set(hashtags)))),
+                send_hashtags = await send_format_initial_message(
+                    message,
+                    hashtags,
                 )
                 await record_telegram_message(
                     session,
-                    sent_hashtags.message_id,
+                    send_hashtags.message_id,
                     telegram_chat,
                 )
 
@@ -75,14 +84,13 @@ async def process_hashtags(
                     disable_notification=True,
                 )
             except asyncio_helper.ApiTelegramException:
-                sent_hashtags = await bot.send_message(
-                    message.chat.id,
-                    '&#128204; Список всех хештегов:\n\n'
-                    + ' '.join(list(sorted(set(hashtags)))),
+                send_hashtags = await send_format_initial_message(
+                    message,
+                    hashtags,
                 )
                 await record_telegram_message(
                     session,
-                    sent_hashtags.message_id,
+                    send_hashtags.message_id,
                     telegram_chat,
                 )
 
