@@ -8,6 +8,7 @@ from hashtag_bot.telegram_bot.common import (
     create_database_session,
     get_telegram_message_chat,
 )
+from hashtag_bot.telegram_bot.formation import message_formation
 
 
 async def add_hashtag_group(message: types.Message):
@@ -45,3 +46,4 @@ async def add_hashtag_group(message: types.Message):
                     f'added to {category.name} group',
                 )
                 await session.commit()
+                await message_formation(message)

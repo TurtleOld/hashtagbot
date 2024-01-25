@@ -9,6 +9,7 @@ from hashtag_bot.telegram_bot.common import (
     get_telegram_message_chat,
     create_database_session,
 )
+from hashtag_bot.telegram_bot.formation import message_formation
 
 
 async def add_group(message: types.Message):
@@ -37,8 +38,10 @@ async def add_group(message: types.Message):
                 message.chat.id,
                 f'Категория "{category_name}" добавлена.',
             )
+            await message_formation(message)
         else:
             await bot.send_message(
                 message.chat.id,
                 f'Категория "{category_name}" уже существует.',
             )
+            await message_formation(message)

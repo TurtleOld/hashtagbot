@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import (
 from telebot import types, asyncio_helper
 from hashtag_bot.config.logger import logger
 from hashtag_bot.config.bot import bot
+from hashtag_bot.telegram_bot.formation import message_formation
 
 from hashtag_bot.telegram_bot.get_db_telegram_info import (
     get_telegram_chat,
@@ -47,6 +48,7 @@ async def process_hashtags(
 ) -> None:
     """The handler function for adding hashtags to the database."""
     hashtags = await get_hashtag_list(message)
+
     if hashtags:
         async with async_session() as session:
             telegram_chat = await get_telegram_chat(session, message)
@@ -83,6 +85,7 @@ async def process_hashtags(
                     message_id=telegram_message.message_id,
                     disable_notification=True,
                 )
+
             except asyncio_helper.ApiTelegramException:
                 send_hashtags = await send_format_initial_message(
                     message,
@@ -99,8 +102,10 @@ async def process_hashtags(
                     session,
                     telegram_chat.id,
                 )
+
             await record_hashtags_database(
                 session,
                 hashtags,
                 telegram_message,
             )
+        await message_formation(message)
