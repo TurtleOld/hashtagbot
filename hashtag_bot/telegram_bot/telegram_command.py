@@ -13,13 +13,41 @@ from hashtag_bot.telegram_bot.remove_hashtag import remove_hashtag
 
 
 @logger.catch
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=['start', 'help'])
 async def start_message(message: types.Message) -> None:
     """
     Function handler messages from group.
     /start command handler function.
     """
-    await bot.reply_to(message, message.text)
+    text_for_user: str = ''.join(
+        (
+            '&#128075; Привет!\nТебя приветствует бот ',
+            'для хранения хештегов в\n&#128204;закрепленном сообщении.\n\n',
+            'Ты можешь меня добавить в &#128483;канал или &#129340;группу ',
+            'и я начну собирать все хештеги, которые ты посылаешь.\n',
+            'Я отвечаю только в личной переписке, владельцу и\\или ',
+            'администраторам канала\\группы.\n\n',
+            'Давай познакомлю тебя с тем, что я имею.\n',
+            'Когда я вижу сообщение с хештегом,',
+            ' я беру его и сохраняю в базу данных',
+            ', и записываю в сообщение, закрепив его.\n',
+            'Закрепленное сообщение сохраняется в базе данных ',
+            'и туда добавляются новые хештеги.\n',
+            '/category - позволяет добавлять категорию для хештегов\n',
+            'Пример:\n<code>/category name_category</code>, '
+            'можно указывать название '
+            'категории через пробел, '
+            'но тогда слова \"заключаются в кавычки\"\n',
+            'Чтобы добавить хештеги в категорию, '
+            'нужно использовать команду /add_hashtag_category\nПример:\n',
+            '<code>/add_hashtag_category name_category #hashtag\n</code>',
+            'Можно удалить хештег(и). Для этого используется команда /remove\n',
+            'Пример:\n<code>/remove #hashtag #newhashtag</code>\n',
+            'Чтобы увидеть это сообщение ещё раз, потребуется команда ',
+            '/start или /help',
+        )
+    )
+    await bot.send_message(message.chat.id, text_for_user)
 
 
 @logger.catch
